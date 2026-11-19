@@ -1,4 +1,4 @@
-name: Roku Livre Android APK
+name: Roku Livre + Android APK
 
 on:
   push:
@@ -29,6 +29,6 @@ jobs:
         run: gradle --no-daemon :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: Roku-Livre-APK
+          name: Roku-Livre-Plus-APK
           path: roku-livre/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error

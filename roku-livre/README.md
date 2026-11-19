@@ -1,12 +1,12 @@
-# Roku Livre — controle remoto Android sem anúncios
+# Roku Livre + — controle remoto Android sem anúncios
 
-Aplicativo Android **nativo**, em português, sem anúncios, conta, analytics ou servidor externo. Comunica-se diretamente com a Roku na rede local pelo **External Control Protocol (ECP)**: descoberta SSDP (UDP 1900) e comandos HTTP (TCP 8060).
+Aplicativo Android **nativo**, em português, sem anúncios, assinatura, conta, analytics ou servidor externo. Comunica-se diretamente com a Roku na rede local por **External Control Protocol (ECP)**: descoberta SSDP (UDP 1900) e comandos HTTP (TCP 8060).
 
 ## Funcionalidades
 
 - Detectar Roku na mesma rede Wi-Fi ou conectar pelo endereço IP privado.
 - Guardar a última TV e reconectar na próxima abertura.
-- Navegação direcional/OK, voltar, início, opções, busca, replay.
+- Navegação direcional/OK, voltar, início, opções, busca e replay.
 - Controle de reprodução, volume, mudo e energia (dependem do modelo).
 - Seleção de entradas HDMI 1–4, TV e AV (apenas em Roku TV compatíveis).
 - Listar/abrir aplicativos instalados e enviar texto ao teclado da TV.
@@ -14,8 +14,8 @@ Aplicativo Android **nativo**, em português, sem anúncios, conta, analytics ou
 
 ## Instalar
 
-1. Abra **Actions > Roku Livre Android APK** no GitHub, execute o workflow (ou escolha uma execução de push concluída).
-2. Baixe o artefato **Roku-Livre-APK**, extraia o arquivo `app-debug.apk` e instale-o no Android.
+1. Abra **Actions > Roku Livre + Android APK** no GitHub e selecione uma execução concluída.
+2. Baixe o artefato **Roku-Livre-Plus-APK**, extraia o arquivo `app-debug.apk` e instale-o no Android.
 3. Conecte o celular e a TV à **mesma rede Wi-Fi**. No televisor, abra **Configurações > Sistema > Configurações avançadas > Controle por aplicativos móveis > Acesso à rede** e selecione **Habilitado** (não é necessário usar **Permissivo**).
 4. Abra o app e toque em **Encontrar TV**. Se o roteador bloquear multicast, use **Informar IP**.
 

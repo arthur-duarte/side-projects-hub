@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "RokuLivre"
+rootProject.name = "RokuLivrePlus"
 include(":app")
