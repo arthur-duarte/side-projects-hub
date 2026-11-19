@@ -120,17 +120,17 @@ object RokuNetwork {
         result
     }
 
-    suspend fun press(ip: String, key: String) {
+    suspend fun press(ip: String, key: String) = withContext(Dispatchers.IO) {
         require(key.matches(Regex("[A-Za-z0-9]{1,40}"))) { "Tecla inválida" }
         request(ip, "keypress/$key", "POST")
     }
 
-    suspend fun launch(ip: String, app: RokuApp) {
+    suspend fun launch(ip: String, app: RokuApp) = withContext(Dispatchers.IO) {
         require(app.id.matches(Regex("[A-Za-z0-9._-]{1,80}")))
         request(ip, "launch/${Uri.encode(app.id)}", "POST")
     }
 
-    suspend fun typeText(ip: String, text: String) {
+    suspend fun typeText(ip: String, text: String) = withContext(Dispatchers.IO) {
         require(text.codePointCount(0, text.length) <= 160) { "Texto muito longo" }
         for (codePoint in text.codePoints().toArray()) {
             val character = String(Character.toChars(codePoint))
