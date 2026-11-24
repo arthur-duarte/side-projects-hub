@@ -1,0 +1,17 @@
+{
+  "name": "Relatório+ IA",
+  "short_name": "Relatório+",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#edf5ef",
+  "theme_color": "#174d37",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
