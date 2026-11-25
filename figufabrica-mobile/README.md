@@ -37,4 +37,4 @@ O aplicativo não envia imagens a servidor e não exige conta. O nome de listage
 
 ## Builds automatizados
 
-O workflow `.github/workflows/figufabrica-mobile.yml` prepara os projetos nativos e compila APK Android e build iOS sem assinatura em runners do GitHub Actions. O APK Android fica como artefato da execução do workflow. A publicação na App Store exige configuração de assinatura e conta Apple; o workflow não publica nas lojas.
+O workflow `.github/workflows/figufabrica-mobile.yml` prepara os projetos nativos e compila APK Android e app de simulador iOS sem assinatura em runners do GitHub Actions. O APK Android fica como artefato da execução do workflow. A publicação na App Store exige configuração de assinatura e conta Apple; o workflow não publica nas lojas.
