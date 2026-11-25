@@ -1,0 +1,21 @@
+name: figufabrica
+publish_to: none
+description: Criador multilíngue de figurinhas para Android e iOS.
+version: 0.1.0+1
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  audioplayers: ^6.8.1
+  image_picker: ^1.2.4
+  share_plus: ^13.3.1
+  shared_preferences: ^2.5.6
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/sounds/

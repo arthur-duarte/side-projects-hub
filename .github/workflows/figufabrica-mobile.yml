@@ -1,0 +1,53 @@
+name: FiguFábrica mobile builds
+on:
+  pull_request:
+    paths:
+      - 'figufabrica-mobile/**'
+      - '.github/workflows/figufabrica-mobile.yml'
+  workflow_dispatch:
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate native platform folders
+        working-directory: figufabrica-mobile
+        run: flutter create --platforms=android,ios --org br.com.arthurduarte --project-name figufabrica .
+      - name: Resolve packages
+        working-directory: figufabrica-mobile
+        run: flutter pub get
+      - name: Build Android release APK
+        working-directory: figufabrica-mobile
+        run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: figufabrica-android-apk
+          path: figufabrica-mobile/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+  ios:
+    name: iOS Simulator build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate native platform folders
+        working-directory: figufabrica-mobile
+        run: flutter create --platforms=android,ios --org br.com.arthurduarte --project-name figufabrica .
+      - name: Resolve packages
+        working-directory: figufabrica-mobile
+        run: flutter pub get
+      - name: Build iOS Simulator app
+        working-directory: figufabrica-mobile
+        run: flutter build ios --simulator
