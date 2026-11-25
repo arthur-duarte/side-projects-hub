@@ -34,7 +34,7 @@ jobs:
           path: figufabrica-mobile/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
   ios:
-    name: iOS Simulator build
+    name: iOS unsigned build
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +48,6 @@ jobs:
       - name: Resolve packages
         working-directory: figufabrica-mobile
         run: flutter pub get
-      - name: Build iOS Simulator app
+      - name: Build iOS without signing
         working-directory: figufabrica-mobile
-        run: flutter build ios --simulator
+        run: flutter build ios --no-codesign

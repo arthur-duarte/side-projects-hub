@@ -119,19 +119,160 @@ class _FactoryHomeState extends State<FactoryHome> {
     body:SafeArea(child:IndexedStack(index:tab,children:[_editor(),_packs(),_sounds()])),
     bottomNavigationBar:NavigationBar(selectedIndex:tab,onDestinationSelected:(v)=>setState(()=>tab=v),destinations:[NavigationDestination(icon:const Icon(Icons.edit_outlined),selectedIcon:const Icon(Icons.edit),label:t('create')),NavigationDestination(icon:const Icon(Icons.folder_outlined),selectedIcon:const Icon(Icons.folder),label:t('packs')),NavigationDestination(icon:const Icon(Icons.graphic_eq),label:t('sounds'))]),
   );
-  Widget _editor()=>LayoutBuilder(builder:(context,constraints)=>SingleChildScrollView(padding:const EdgeInsets.fromLTRB(16,12,16,20),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-    Text(t('headline'),style:Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight:FontWeight.w800,color:ink,letterSpacing:-.6)),const SizedBox(height:5),Text(t('intro'),style:Theme.of(context).textTheme.bodyMedium?.copyWith(color:Colors.black54)),const SizedBox(height:17),
-    Container(key:keyPreview,width:double.infinity,padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(22),border:Border.all(color:const Color(0xFFE9E7F0))),child:Column(children:[Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[Text(t('preview'),style:const TextStyle(fontWeight:FontWeight.w800)),Text('512 × 512  •  ${t('transparent')}',style:const TextStyle(fontSize:10,color:Colors.black45))]),const SizedBox(height:10),AspectRatio(aspectRatio:1,child:Container(decoration:BoxDecoration(borderRadius:BorderRadius.circular(16),color:const Color(0xFFF7F6FB)),clipBehavior:Clip.antiAlias,child:Stack(alignment:Alignment.center,children:[if(photo!=null)Padding(padding:const EdgeInsets.all(14),child:Image.memory(photo!,fit:BoxFit.contain)),if(caption.text.trim().isNotEmpty)Positioned(bottom:photo==null?0:18,left:14,right:14,child:Text(caption.text,textAlign:TextAlign.center,maxLines:2,style:TextStyle(fontSize:caption.text.length>20?26:32,fontWeight:FontWeight.w900,color:textColor,shadows:const [Shadow(color:Colors.black54,blurRadius:4,offset:Offset(1,2))]))),if(photo==null&&caption.text.trim().isEmpty)Column(mainAxisAlignment:MainAxisAlignment.center,children:[const Icon(Icons.auto_awesome,color:Color(0xFFC4B9FF),size:34),const SizedBox(height:8),Text(t('addFirst'),style:const TextStyle(color:Colors.black45,fontSize:12))])]))])),
-    const SizedBox(height:15),Wrap(spacing:10,runSpacing:8,children:[FilledButton.icon(onPressed:_pick,icon:const Icon(Icons.add_photo_alternate_outlined),label:Text(t('choosePhoto'))),if(photo!=null)OutlinedButton.icon(onPressed:()=>setState(()=>photo=null),icon:const Icon(Icons.close),label:Text(t('removePhoto')))]),const SizedBox(height:15),
-    TextField(controller:caption,onChanged:(_)=>setState((){}),maxLength:40,decoration:InputDecoration(labelText:t('caption'),hintText:t('captionHint'),filled:true,fillColor:Colors.white,border:OutlineInputBorder(borderRadius:BorderRadius.circular(14),borderSide:BorderSide.none),counterText:'')),const SizedBox(height:12),
-    LayoutBuilder(builder:(context,c){
-      final colors=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t('textColor'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:8),Wrap(spacing:8,children:[Colors.white,const Color(0xFFFFCB56),const Color(0xFFFF6A72),ink].map((color)=>GestureDetector(onTap:()=>setState(()=>textColor=color),child:Container(width:30,height:30,decoration:BoxDecoration(color:color,shape:BoxShape.circle,border:Border.all(color:textColor==color?violet:Colors.black12,width:textColor==color?3:1))))).toList())]);
-      final name=TextField(controller:packName,decoration:InputDecoration(labelText:t('packName'),hintText:t('packHint'),filled:true,fillColor:Colors.white,border:OutlineInputBorder(borderRadius:BorderRadius.circular(14),borderSide:BorderSide.none)));
-      if(c.maxWidth<360)return Column(crossAxisAlignment:CrossAxisAlignment.start,children:[colors,const SizedBox(height:14),name]);
-      return Row(crossAxisAlignment:CrossAxisAlignment.center,children:[Expanded(child:colors),const SizedBox(width:16),Expanded(child:name)]);
-    }),const SizedBox(height:15),
-    Wrap(spacing:10,runSpacing:10,children:[FilledButton.icon(onPressed:_save,icon:const Icon(Icons.bookmark_add_outlined),label:Text(t('save'))),OutlinedButton.icon(onPressed:_share,icon:const Icon(Icons.share_outlined),label:Text(t('share')))]),const SizedBox(height:12),Center(child:Text(t('privacy'),style:const TextStyle(color:Colors.black45,fontSize:11))),
-  ])));
-  Widget _packs()=>packs.isEmpty?Center(child:Padding(padding:const EdgeInsets.all(30),child:Column(mainAxisSize:MainAxisSize.min,children:[const Icon(Icons.folder_open,color:violet,size:48),const SizedBox(height:12),Text(t('emptyPacks'),textAlign:TextAlign.center)]))):ListView.separated(padding:const EdgeInsets.all(16),itemCount:packs.length,itemBuilder:(context,index){final p=packs[index];final items=(p['items'] as List).cast<Map>();return Card(color:Colors.white,child:ExpansionTile(title:Text(p['name'],style:const TextStyle(fontWeight:FontWeight.w700)),subtitle:Text('${items.length} ${t('packCount')}'),leading:const CircleAvatar(backgroundColor:Color(0xFFEDE9FF),child:Icon(Icons.folder,color:violet)),trailing:IconButton(tooltip:t('delete'),onPressed:()async{setState(()=>packs.removeAt(index));await _persist();},icon:const Icon(Icons.delete_outline)),children:[if(items.isEmpty)Padding(padding:const EdgeInsets.all(14),child:Text(t('noStickers'))) else Wrap(spacing:8,runSpacing:8,children:items.take(12).map((item)=>Container(width:64,height:64,padding:const EdgeInsets.all(4),decoration:BoxDecoration(color:const Color(0xFFF7F6FB),borderRadius:BorderRadius.circular(12)),child:Image.memory(base64Decode(item['png']),fit:BoxFit.contain))).toList()),const SizedBox(height:12)]));},separatorBuilder:(_,__)=>const SizedBox(height:4));
-  Widget _sounds()=>ListView(padding:const EdgeInsets.all(16),children:[Text(t('soundIntro'),style:Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight:FontWeight.w700)),const SizedBox(height:12),...List.generate(8,(i)=>Card(color:Colors.white,child:ListTile(leading:CircleAvatar(backgroundColor:const Color(0xFFEDE9FF),child:Icon(Icons.graphic_eq,color:violet)),title:Text(t('sound${i+1}')),trailing:IconButton(onPressed:()=>_play(i),icon:const Icon(Icons.play_circle_fill,color:violet,size:30))))),const SizedBox(height:10),Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:const Color(0xFFEDE9FF),borderRadius:BorderRadius.circular(15)),child:Text(t('soundLimit'),style:const TextStyle(fontSize:12,height:1.45))]);
+  Widget _editor() => SingleChildScrollView(
+    padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(t('headline'), style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800, color: ink, letterSpacing: -.6)),
+        const SizedBox(height: 5),
+        Text(t('intro'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.black54)),
+        const SizedBox(height: 17),
+        _previewCard(),
+        const SizedBox(height: 15),
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          children: [
+            FilledButton.icon(onPressed: _pick, icon: const Icon(Icons.add_photo_alternate_outlined), label: Text(t('choosePhoto'))),
+            if (photo != null) OutlinedButton.icon(onPressed: () => setState(() => photo = null), icon: const Icon(Icons.close), label: Text(t('removePhoto'))),
+          ],
+        ),
+        const SizedBox(height: 15),
+        TextField(
+          controller: caption,
+          onChanged: (_) => setState(() {}),
+          maxLength: 40,
+          decoration: InputDecoration(labelText: t('caption'), hintText: t('captionHint'), filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none), counterText: ''),
+        ),
+        const SizedBox(height: 12),
+        LayoutBuilder(builder: (context, constraints) {
+          final colors = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(t('textColor'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [Colors.white, const Color(0xFFFFCB56), const Color(0xFFFF6A72), ink].map((color) => GestureDetector(
+                  onTap: () => setState(() => textColor = color),
+                  child: Container(width: 30, height: 30, decoration: BoxDecoration(color: color, shape: BoxShape.circle, border: Border.all(color: textColor == color ? violet : Colors.black12, width: textColor == color ? 3 : 1))),
+                )).toList(),
+              ),
+            ],
+          );
+          final name = TextField(
+            controller: packName,
+            decoration: InputDecoration(labelText: t('packName'), hintText: t('packHint'), filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none)),
+          );
+          if (constraints.maxWidth < 360) return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [colors, const SizedBox(height: 14), name]);
+          return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [Expanded(child: colors), const SizedBox(width: 16), Expanded(child: name)]);
+        }),
+        const SizedBox(height: 15),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            FilledButton.icon(onPressed: _save, icon: const Icon(Icons.bookmark_add_outlined), label: Text(t('save'))),
+            OutlinedButton.icon(onPressed: _share, icon: const Icon(Icons.share_outlined), label: Text(t('share'))),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Center(child: Text(t('privacy'), style: const TextStyle(color: Colors.black45, fontSize: 11))),
+      ],
+    ),
+  );
+
+  Widget _previewCard() => Container(
+    key: keyPreview,
+    width: double.infinity,
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22), border: Border.all(color: const Color(0xFFE9E7F0))),
+    child: Column(
+      children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text(t('preview'), style: const TextStyle(fontWeight: FontWeight.w800)),
+          Flexible(child: Text('512 × 512  •  ${t('transparent')}', textAlign: TextAlign.end, style: const TextStyle(fontSize: 10, color: Colors.black45))),
+        ]),
+        const SizedBox(height: 10),
+        AspectRatio(
+          aspectRatio: 1,
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: const Color(0xFFF7F6FB)),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                if (photo != null) Padding(padding: const EdgeInsets.all(14), child: Image.memory(photo!, fit: BoxFit.contain)),
+                if (caption.text.trim().isNotEmpty)
+                  Positioned(
+                    bottom: photo == null ? 0 : 18,
+                    left: 14,
+                    right: 14,
+                    child: Text(caption.text, textAlign: TextAlign.center, maxLines: 2, style: TextStyle(fontSize: caption.text.length > 20 ? 26 : 32, fontWeight: FontWeight.w900, color: textColor, shadows: const [Shadow(color: Colors.black54, blurRadius: 4, offset: Offset(1, 2))])),
+                  ),
+                if (photo == null && caption.text.trim().isEmpty)
+                  Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    const Icon(Icons.auto_awesome, color: Color(0xFFC4B9FF), size: 34),
+                    const SizedBox(height: 8),
+                    Text(t('addFirst'), textAlign: TextAlign.center, style: const TextStyle(color: Colors.black45, fontSize: 12)),
+                  ]),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _packs() {
+    if (packs.isEmpty) {
+      return Center(child: Padding(padding: const EdgeInsets.all(30), child: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.folder_open, color: violet, size: 48), const SizedBox(height: 12), Text(t('emptyPacks'), textAlign: TextAlign.center)])));
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: packs.length,
+      itemBuilder: (context, index) {
+        final pack = packs[index];
+        final items = (pack['items'] as List).cast<Map>();
+        return Card(
+          color: Colors.white,
+          child: ExpansionTile(
+            title: Text(pack['name'], style: const TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: Text('${items.length} ${t('packCount')}'),
+            leading: const CircleAvatar(backgroundColor: Color(0xFFEDE9FF), child: Icon(Icons.folder, color: violet)),
+            trailing: IconButton(tooltip: t('delete'), onPressed: () async { setState(() => packs.removeAt(index)); await _persist(); }, icon: const Icon(Icons.delete_outline)),
+            children: [
+              if (items.isEmpty) Padding(padding: const EdgeInsets.all(14), child: Text(t('noStickers')))
+              else Wrap(spacing: 8, runSpacing: 8, children: items.take(12).map((item) => Container(width: 64, height: 64, padding: const EdgeInsets.all(4), decoration: BoxDecoration(color: const Color(0xFFF7F6FB), borderRadius: BorderRadius.circular(12)), child: Image.memory(base64Decode(item['png']), fit: BoxFit.contain))).toList()),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+      separatorBuilder: (_, __) => const SizedBox(height: 4),
+    );
+  }
+
+  Widget _sounds() => ListView(
+    padding: const EdgeInsets.all(16),
+    children: [
+      Text(t('soundIntro'), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+      const SizedBox(height: 12),
+      ...List.generate(8, (index) => Card(
+        color: Colors.white,
+        child: ListTile(
+          leading: const CircleAvatar(backgroundColor: Color(0xFFEDE9FF), child: Icon(Icons.graphic_eq, color: violet)),
+          title: Text(t('sound${index + 1}')),
+          trailing: IconButton(onPressed: () => _play(index), icon: const Icon(Icons.play_circle_fill, color: violet, size: 30)),
+        ),
+      )),
+      const SizedBox(height: 10),
+      Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(color: const Color(0xFFEDE9FF), borderRadius: BorderRadius.circular(15)),
+        child: Text(t('soundLimit'), style: const TextStyle(fontSize: 12, height: 1.45)),
+      ),
+    ],
+  );
 }
