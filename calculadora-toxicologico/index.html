@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#176b4d">
+  <meta name="description" content="Calculadora offline de validade do exame toxicológico e data no AIT.">
+  <title>Calculadora do Exame Toxicológico</title>
+  <style>
+    :root {
+      --green-900: #0d4d36;
+      --green-800: #125d42;
+      --green-700: #176b4d;
+      --green-600: #22805e;
+      --green-100: #dff3e9;
+      --green-050: #f3fbf7;
+      --blue-700: #174ea6;
+      --blue-100: #e8f0fe;
+      --ink: #1d2925;
+      --muted: #5c6b65;
+      --line: #d9e4df;
+      --surface: #ffffff;
+      --background: #eef4f1;
+      --danger: #b42318;
+      --danger-bg: #fff1f0;
+      --warning: #8a5a00;
+      --warning-bg: #fff8e6;
+      --shadow: 0 18px 44px rgba(13, 77, 54, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { color-scheme: light; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 28px 14px;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(34, 128, 94, .10), transparent 28rem),
+        var(--background);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+
+    .app {
+      width: min(560px, 100%);
+    }
+
+    .app-header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .app-icon {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 12px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      color: #fff;
+      background: linear-gradient(145deg, var(--green-600), var(--green-900));
+      box-shadow: 0 10px 24px rgba(23, 107, 77, .25);
+    }
+
+    .app-icon svg { width: 30px; height: 30px; }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.55rem, 5vw, 2rem);
+      line-height: 1.1;
+      letter-spacing: -.035em;
+    }
+
+    .subtitle {
+      max-width: 480px;
+      margin: 8px auto 0;
+      color: var(--muted);
+      font-size: .96rem;
+      line-height: 1.5;
+    }
+
+    .card {
+      overflow: hidden;
+      border: 1px solid rgba(217, 228, 223, .95);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .main-area { padding: clamp(20px, 5vw, 30px); }
+
+    .formula {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-bottom: 22px;
+    }
+
+    .formula-item {
+      min-width: 0;
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--green-050);
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.35;
+    }
+
+    .formula-item strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--green-900);
+      font-size: .95rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 760;
+    }
+
+    .date-field {
+      display: grid;
+      grid-template-columns: 1fr 52px;
+      gap: 8px;
+    }
+
+    #collectionDate {
+      width: 100%;
+      min-width: 0;
+      height: 56px;
+      padding: 0 15px;
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      outline: none;
+      color: var(--ink);
+      background: #fff;
+      font-size: 1.18rem;
+      font-weight: 700;
+      letter-spacing: .025em;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+
+    #collectionDate:focus {
+      border-color: var(--green-600);
+      box-shadow: 0 0 0 4px rgba(34, 128, 94, .12);
+    }
+
+    #collectionDate[aria-invalid="true"] {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 4px rgba(180, 35, 24, .09);
+    }
+
+    .calendar-button {
+      height: 56px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border: 1px solid #bcd7ca;
+      border-radius: 14px;
+      color: var(--green-900);
+      background: var(--green-100);
+      cursor: pointer;
+    }
+
+    .calendar-button:hover { background: #d2ecdf; }
+    .calendar-button svg { width: 23px; height: 23px; }
+
+    #datePicker {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      left: -9999px;
+      opacity: 0;
+    }
+
+    .help {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: .84rem;
+      line-height: 1.45;
+    }
+
+    .error {
+      display: none;
+      margin-top: 12px;
+      padding: 11px 12px;
+      border: 1px solid #f4b9b4;
+      border-radius: 11px;
+      color: var(--danger);
+      background: var(--danger-bg);
+      font-size: .88rem;
+      line-height: 1.4;
+    }
+
+    .error.show { display: block; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 126px;
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    button {
+      min-height: 50px;
+      border: 0;
+      border-radius: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .12s ease, filter .12s ease, background .12s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button:focus-visible, select:focus-visible, summary:focus-visible {
+      outline: 3px solid rgba(34, 128, 94, .24);
+      outline-offset: 2px;
+    }
+
+    .calculate-button {
+      color: #fff;
+      background: linear-gradient(135deg, var(--green-600), var(--green-900));
+      box-shadow: 0 9px 18px rgba(23, 107, 77, .20);
+    }
+
+    .clear-button {
+      color: var(--green-900);
+      background: var(--green-100);
+    }
+
+    .results {
+      display: none;
+      padding: clamp(20px, 5vw, 28px);
+      border-top: 1px solid var(--line);
+      background: linear-gradient(180deg, #fbfefd, #f4faf7);
+    }
+
+    .results.show {
+      display: block;
+      animation: appear .22s ease-out;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .results h2 {
+      margin: 0 0 13px;
+      font-size: 1.08rem;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .result-box {
+      min-width: 0;
+      padding: 15px;
+      border: 1px solid #cbdcd4;
+      border-radius: 15px;
+      background: #fff;
+    }
+
+    .result-box.ait {
+      border-color: #c8d7f2;
+      background: #fbfdff;
+    }
+
+    .result-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    .result-label .step {
+      width: 22px;
+      height: 22px;
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--green-700);
+      font-size: .72rem;
+    }
+
+    .result-box.ait .step { background: var(--blue-700); }
+
+    .result-date {
+      display: block;
+      margin-top: 7px;
+      color: var(--green-900);
+      font-size: clamp(1.25rem, 5vw, 1.55rem);
+      letter-spacing: -.035em;
+      white-space: nowrap;
+    }
+
+    .result-box.ait .result-date { color: var(--blue-700); }
+
+    .collection-reference {
+      margin: 11px 0 0;
+      color: var(--muted);
+      font-size: .83rem;
+      line-height: 1.45;
+    }
+
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .small-button {
+      min-height: 40px;
+      padding: 0 13px;
+      color: var(--green-900);
+      background: var(--green-100);
+      font-size: .85rem;
+    }
+
+    .small-button.secondary {
+      color: #40504a;
+      background: #edf2ef;
+    }
+
+    .operational-note {
+      margin: 14px 0 0;
+      padding: 10px 11px;
+      border-left: 4px solid #d3a024;
+      border-radius: 8px;
+      color: #6e4e00;
+      background: var(--warning-bg);
+      font-size: .78rem;
+      line-height: 1.45;
+    }
+
+    .reference-area {
+      border-top: 1px solid var(--line);
+      background: #fff;
+    }
+
+    details { padding: 0; }
+
+    summary {
+      padding: 17px clamp(20px, 5vw, 30px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--green-900);
+      font-weight: 820;
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    .summary-icon {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--green-100);
+      transition: transform .18s ease;
+    }
+
+    details[open] .summary-icon { transform: rotate(180deg); }
+
+    .reference-content {
+      padding: 0 clamp(20px, 5vw, 30px) 23px;
+    }
+
+    .reference-intro {
+      margin: 0 0 11px;
+      color: var(--muted);
+      font-size: .83rem;
+      line-height: 1.45;
+    }
+
+    #legislationSelect {
+      width: 100%;
+      min-height: 48px;
+      padding: 0 42px 0 12px;
+      border: 1px solid #bfcfc7;
+      border-radius: 12px;
+      color: var(--ink);
+      background-color: #fff;
+      cursor: pointer;
+    }
+
+    .law-card {
+      margin-top: 11px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #f8fbf9;
+    }
+
+    .law-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .law-title {
+      margin: 0;
+      font-size: .94rem;
+      line-height: 1.35;
+    }
+
+    .status-badge {
+      flex: 0 0 auto;
+      padding: 4px 7px;
+      border-radius: 999px;
+      color: var(--green-900);
+      background: var(--green-100);
+      font-size: .69rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .status-badge.historical {
+      color: #655f58;
+      background: #ece9e5;
+    }
+
+    .law-description {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: .81rem;
+      line-height: 1.45;
+    }
+
+    .open-law-button {
+      width: 100%;
+      min-height: 44px;
+      margin-top: 11px;
+      color: #fff;
+      background: var(--green-700);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: .87rem;
+    }
+
+    .open-law-button:hover { filter: brightness(.96); }
+
+    .links-note {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: .73rem;
+      line-height: 1.4;
+    }
+
+    .footer {
+      margin: 13px 0 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: .74rem;
+      line-height: 1.45;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 470px) {
+      body { padding: 18px 10px; place-items: start center; }
+      .formula, .result-grid { grid-template-columns: 1fr; }
+      .actions { grid-template-columns: 1fr; }
+      .clear-button { width: 100%; }
+      .result-date { white-space: normal; }
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .app-header, .main-area, .reference-area, .footer, .result-actions { display: none !important; }
+      .card { border: 0; box-shadow: none; }
+      .results { display: block !important; border: 0; background: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <div class="app-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 3h6"></path>
+          <path d="M10 3v5.2L5.7 16a3.4 3.4 0 0 0 3 5h6.6a3.4 3.4 0 0 0 3-5L14 8.2V3"></path>
+          <path d="M8.4 14h7.2"></path>
+          <path d="M9.6 17.2h4.8"></path>
+        </svg>
+      </div>
+      <h1>Calculadora do Exame Toxicológico</h1>
+      <p class="subtitle">Informe a data da coleta para obter a validade e a data equivalente no AIT.</p>
+    </header>
+
+    <section class="card" aria-label="Calculadora de datas do exame toxicológico">
+      <div class="main-area">
+        <div class="formula" aria-label="Lógica do cálculo">
+          <div class="formula-item">
+            <strong>Validade</strong>
+            Data da coleta + 30 meses
+          </div>
+          <div class="formula-item">
+            <strong>Data no AIT</strong>
+            Validade + 31 dias
+          </div>
+        </div>
+
+        <form id="calculatorForm" novalidate>
+          <label for="collectionDate">Data da coleta <span aria-hidden="true">(dd/mm/aaaa)</span></label>
+          <div class="date-field">
+            <input
+              id="collectionDate"
+              name="collectionDate"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              maxlength="10"
+              placeholder="DD/MM/AAAA"
+              aria-describedby="dateHelp errorMessage"
+              aria-invalid="false"
+              autofocus
+            >
+            <button class="calendar-button" id="calendarButton" type="button" aria-label="Selecionar data no calendário" title="Selecionar no calendário">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                <path d="M16 3v4M8 3v4M3 10h18"></path>
+                <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path>
+              </svg>
+            </button>
+            <input id="datePicker" type="date" tabindex="-1" aria-hidden="true">
+          </div>
+
+          <p class="help" id="dateHelp">Digite com ou sem barras. Exemplo: <strong>23032023</strong> ou <strong>23/03/2023</strong>.</p>
+          <div class="error" id="errorMessage" role="alert"></div>
+
+          <div class="actions">
+            <button class="calculate-button" type="submit">Calcular</button>
+            <button class="clear-button" id="clearButton" type="button">Limpar</button>
+          </div>
+        </form>
+      </div>
+
+      <section class="results" id="results" aria-live="polite" aria-labelledby="resultTitle" tabindex="-1">
+        <h2 id="resultTitle">Resultado</h2>
+        <div class="result-grid">
+          <article class="result-box">
+            <div class="result-label"><span class="step">1</span> Validade</div>
+            <strong class="result-date" id="validityResult">—</strong>
+          </article>
+          <article class="result-box ait">
+            <div class="result-label"><span class="step">2</span> Data no AIT</div>
+            <strong class="result-date" id="aitResult">—</strong>
+          </article>
+        </div>
+        <p class="collection-reference">Data da coleta utilizada: <strong id="collectionResult">—</strong></p>
+        <div class="result-actions">
+          <button class="small-button" id="copyButton" type="button">Copiar resultado</button>
+          <button class="small-button secondary" id="newCalculationButton" type="button">Novo cálculo</button>
+        </div>
+        <p class="operational-note">Regra utilizada no cálculo: data da coleta + 30 meses para a validade e, depois, +31 dias para a data no AIT. Para decisões administrativas, confira também o calendário oficial no RENACH e a norma aplicável ao caso.</p>
+      </section>
+
+      <section class="reference-area" aria-label="Legislação e referências">
+        <details>
+          <summary>
+            <span>Legislação e referências</span>
+            <span class="summary-icon" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="reference-content">
+            <p class="reference-intro">Selecione uma norma para ver o resumo e abrir o documento oficial.</p>
+
+            <label class="sr-only" for="legislationSelect">Selecionar norma</label>
+            <select id="legislationSelect">
+              <optgroup label="Normas principais e vigentes">
+                <option value="ctb">Código de Trânsito Brasileiro — Lei nº 9.503/1997 e atualizações</option>
+                <option value="res923">Resolução CONTRAN nº 923/2022 — texto compilado</option>
+                <option value="res1009">Resolução CONTRAN nº 1.009/2024</option>
+                <option value="res1002">Resolução CONTRAN nº 1.002/2023</option>
+                <option value="res844">Resolução CONTRAN nº 844/2021</option>
+                <option value="mbft">Manual Brasileiro de Fiscalização de Trânsito — MBFT</option>
+              </optgroup>
+              <optgroup label="Referência histórica">
+                <option value="res843">Resolução CONTRAN nº 843/2021 — revogada</option>
+              </optgroup>
+            </select>
+
+            <div class="law-card" id="lawCard" aria-live="polite">
+              <div class="law-heading">
+                <h3 class="law-title" id="lawTitle"></h3>
+                <span class="status-badge" id="lawStatus"></span>
+              </div>
+              <p class="law-description" id="lawDescription"></p>
+              <a class="open-law-button" id="openLawButton" href="#" target="_blank" rel="noopener noreferrer">
+                Abrir documento oficial
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+            <p class="links-note">A calculadora funciona offline. Os documentos externos exigem conexão com a internet. Referências verificadas em 19/06/2026.</p>
+          </div>
+        </details>
+      </section>
+    </section>
+
+    <p class="footer">Arquivo HTML único, sem instalação e sem envio de dados.</p>
+    <div class="sr-only" id="liveMessage" aria-live="polite"></div>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const form = document.getElementById('calculatorForm');
+      const input = document.getElementById('collectionDate');
+      const datePicker = document.getElementById('datePicker');
+      const calendarButton = document.getElementById('calendarButton');
+      const errorMessage = document.getElementById('errorMessage');
+      const clearButton = document.getElementById('clearButton');
+      const results = document.getElementById('results');
+      const collectionResult = document.getElementById('collectionResult');
+      const validityResult = document.getElementById('validityResult');
+      const aitResult = document.getElementById('aitResult');
+      const copyButton = document.getElementById('copyButton');
+      const newCalculationButton = document.getElementById('newCalculationButton');
+      const liveMessage = document.getElementById('liveMessage');
+
+      const legislationSelect = document.getElementById('legislationSelect');
+      const lawTitle = document.getElementById('lawTitle');
+      const lawStatus = document.getElementById('lawStatus');
+      const lawDescription = document.getElementById('lawDescription');
+      const openLawButton = document.getElementById('openLawButton');
+
+      const legislation = {
+        ctb: {
+          title: 'Código de Trânsito Brasileiro — Lei nº 9.503/1997 e atualizações',
+          status: 'Vigente',
+          className: '',
+          description: 'Texto compilado do CTB. O art. 148-A trata do exame toxicológico; os arts. 165-C e 165-D disciplinam infrações relacionadas ao resultado positivo e à falta do exame periódico no prazo.',
+          url: 'https://www.planalto.gov.br/ccivil_03/leis/l9503compilado.htm'
+        },
+        res923: {
+          title: 'Resolução CONTRAN nº 923/2022 — texto compilado',
+          status: 'Vigente',
+          className: '',
+          description: 'Regulamenta o exame toxicológico de larga janela de detecção em amostra queratínica. O texto compilado já incorpora as alterações da Resolução CONTRAN nº 1.009/2024.',
+          url: 'https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-Senatran/resolucoes2/Resoluo923compilado.pdf'
+        },
+        res1009: {
+          title: 'Resolução CONTRAN nº 1.009/2024',
+          status: 'Vigente',
+          className: '',
+          description: 'Atualiza regras sobre exame periódico, informações no RENACH, laudos, alertas de vencimento e fichas do MBFT. Alterou a Resolução nº 923/2022.',
+          url: 'https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao10092024.pdf'
+        },
+        res1002: {
+          title: 'Resolução CONTRAN nº 1.002/2023',
+          status: 'Vigente',
+          className: '',
+          description: 'Referenda a Deliberação CONTRAN nº 268/2023 e estabelece prazos específicos para regularização do exame toxicológico periódico.',
+          url: 'https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao10022023.pdf'
+        },
+        res843: {
+          title: 'Resolução CONTRAN nº 843/2021',
+          status: 'Revogada',
+          className: 'historical',
+          description: 'Referência histórica que alterava a antiga Resolução nº 691/2017. Foi revogada pela Resolução CONTRAN nº 923/2022.',
+          url: 'https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao8432021.pdf'
+        },
+        res844: {
+          title: 'Resolução CONTRAN nº 844/2021',
+          status: 'Em vigor',
+          className: '',
+          description: 'Altera a Resolução CONTRAN nº 723/2018 e trata de procedimentos administrativos de suspensão e cassação, incluindo disposições relacionadas a resultado positivo no exame toxicológico periódico.',
+          url: 'https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao8442021R.pdf'
+        },
+        mbft: {
+          title: 'Manual Brasileiro de Fiscalização de Trânsito — MBFT',
+          status: 'Em vigor',
+          className: '',
+          description: 'Reúne fichas de fiscalização, códigos de enquadramento e orientações operacionais, incluindo as referências 764-10 e 765-00 relacionadas ao exame toxicológico. Deve ser consultado com suas alterações posteriores.',
+          url: 'https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/mbvt20222.pdf'
+        }
+      };
+
+      const pad = value => String(value).padStart(2, '0');
+
+      function todayParts() {
+        const now = new Date();
+        return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
+      }
+
+      function partsToBR(parts) {
+        return `${pad(parts.day)}/${pad(parts.month)}/${parts.year}`;
+      }
+
+      function partsToISO(parts) {
+        return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}`;
+      }
+
+      function daysInMonth(year, month) {
+        return new Date(Date.UTC(year, month, 0)).getUTCDate();
+      }
+
+      function isValidDateParts(parts) {
+        return Boolean(
+          parts &&
+          Number.isInteger(parts.day) &&
+          Number.isInteger(parts.month) &&
+          Number.isInteger(parts.year) &&
+          parts.year >= 1900 &&
+          parts.year <= 9999 &&
+          parts.month >= 1 &&
+          parts.month <= 12 &&
+          parts.day >= 1 &&
+          parts.day <= daysInMonth(parts.year, parts.month)
+        );
+      }
+
+      function compareParts(a, b) {
+        const aValue = a.year * 10000 + a.month * 100 + a.day;
+        const bValue = b.year * 10000 + b.month * 100 + b.day;
+        return Math.sign(aValue - bValue);
+      }
+
+      function parseBRDate(value) {
+        const digits = String(value || '').replace(/\D/g, '');
+        if (digits.length !== 8) return null;
+        const parts = {
+          day: Number(digits.slice(0, 2)),
+          month: Number(digits.slice(2, 4)),
+          year: Number(digits.slice(4, 8))
+        };
+        return isValidDateParts(parts) ? parts : null;
+      }
+
+      function parseISODate(value) {
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+        if (!match) return null;
+        const parts = { year: Number(match[1]), month: Number(match[2]), day: Number(match[3]) };
+        return isValidDateParts(parts) ? parts : null;
+      }
+
+      function addMonths(parts, months) {
+        const absoluteMonth = (parts.year * 12 + (parts.month - 1)) + months;
+        const year = Math.floor(absoluteMonth / 12);
+        const month = (absoluteMonth % 12) + 1;
+        const day = Math.min(parts.day, daysInMonth(year, month));
+        return { year, month, day };
+      }
+
+      function addDays(parts, days) {
+        const date = new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
+        date.setUTCDate(date.getUTCDate() + days);
+        return {
+          year: date.getUTCFullYear(),
+          month: date.getUTCMonth() + 1,
+          day: date.getUTCDate()
+        };
+      }
+
+      function formatTypedDate(value) {
+        const digits = String(value || '').replace(/\D/g, '').slice(0, 8);
+        if (digits.length <= 2) return digits;
+        if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+        return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+      }
+
+      function normalizePastedDate(value) {
+        const text = String(value || '').trim();
+        const isoMatch = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/.exec(text);
+        if (isoMatch) {
+          const parts = { year: Number(isoMatch[1]), month: Number(isoMatch[2]), day: Number(isoMatch[3]) };
+          if (isValidDateParts(parts)) return partsToBR(parts);
+        }
+        return formatTypedDate(text);
+      }
+
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.add('show');
+        input.setAttribute('aria-invalid', 'true');
+        results.classList.remove('show');
+        liveMessage.textContent = message;
+      }
+
+      function clearError() {
+        errorMessage.textContent = '';
+        errorMessage.classList.remove('show');
+        input.setAttribute('aria-invalid', 'false');
+      }
+
+      function calculate(collection) {
+        const validity = addMonths(collection, 30);
+        const ait = addDays(validity, 31);
+
+        collectionResult.textContent = partsToBR(collection);
+        validityResult.textContent = partsToBR(validity);
+        aitResult.textContent = partsToBR(ait);
+        results.classList.add('show');
+        liveMessage.textContent = `Validade: ${partsToBR(validity)}. Data no AIT: ${partsToBR(ait)}.`;
+        results.focus({ preventScroll: true });
+        results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      function resetCalculator() {
+        input.value = '';
+        datePicker.value = '';
+        clearError();
+        results.classList.remove('show');
+        liveMessage.textContent = 'Calculadora limpa.';
+        input.focus();
+      }
+
+      function updateLawCard(key) {
+        const item = legislation[key] || legislation.ctb;
+        lawTitle.textContent = item.title;
+        lawStatus.textContent = item.status;
+        lawStatus.className = `status-badge ${item.className}`.trim();
+        lawDescription.textContent = item.description;
+        openLawButton.href = item.url;
+        openLawButton.setAttribute('aria-label', `Abrir documento oficial: ${item.title}`);
+      }
+
+      input.addEventListener('input', event => {
+        event.target.value = formatTypedDate(event.target.value);
+        clearError();
+      });
+
+      input.addEventListener('paste', event => {
+        event.preventDefault();
+        const clipboard = (event.clipboardData || window.clipboardData).getData('text');
+        input.value = normalizePastedDate(clipboard);
+        clearError();
+      });
+
+      input.addEventListener('focus', () => {
+        if (input.value) input.select();
+      });
+
+      datePicker.max = partsToISO(todayParts());
+
+      calendarButton.addEventListener('click', () => {
+        if (typeof datePicker.showPicker === 'function') {
+          datePicker.showPicker();
+        } else {
+          datePicker.click();
+        }
+      });
+
+      datePicker.addEventListener('change', () => {
+        const selected = parseISODate(datePicker.value);
+        if (!selected) return;
+        input.value = partsToBR(selected);
+        clearError();
+        input.focus();
+      });
+
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        clearError();
+
+        const digits = input.value.replace(/\D/g, '');
+        if (!digits) {
+          showError('Informe a data da coleta para realizar o cálculo.');
+          input.focus();
+          return;
+        }
+
+        if (digits.length !== 8) {
+          showError('Digite a data completa com 8 números. Exemplo: 23032023.');
+          input.focus();
+          return;
+        }
+
+        const collection = parseBRDate(input.value);
+        if (!collection) {
+          showError('A data informada não existe. Confira o dia, o mês e o ano.');
+          input.focus();
+          return;
+        }
+
+        if (compareParts(collection, todayParts()) > 0) {
+          showError('A data da coleta não pode estar no futuro.');
+          input.focus();
+          return;
+        }
+
+        input.value = partsToBR(collection);
+        datePicker.value = partsToISO(collection);
+        calculate(collection);
+      });
+
+      clearButton.addEventListener('click', resetCalculator);
+      newCalculationButton.addEventListener('click', resetCalculator);
+
+      copyButton.addEventListener('click', async () => {
+        const text = [
+          'Cálculo do exame toxicológico',
+          `Data da coleta: ${collectionResult.textContent}`,
+          `Validade: ${validityResult.textContent}`,
+          `Data no AIT: ${aitResult.textContent}`
+        ].join('\n');
+
+        const originalText = copyButton.textContent;
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const helper = document.createElement('textarea');
+            helper.value = text;
+            helper.setAttribute('readonly', '');
+            helper.style.position = 'fixed';
+            helper.style.opacity = '0';
+            document.body.appendChild(helper);
+            helper.select();
+            document.execCommand('copy');
+            helper.remove();
+          }
+          copyButton.textContent = 'Copiado!';
+          liveMessage.textContent = 'Resultado copiado.';
+        } catch {
+          copyButton.textContent = 'Não foi possível copiar';
+          liveMessage.textContent = 'Não foi possível copiar automaticamente.';
+        }
+        setTimeout(() => { copyButton.textContent = originalText; }, 1800);
+      });
+
+      legislationSelect.addEventListener('change', () => updateLawCard(legislationSelect.value));
+      updateLawCard(legislationSelect.value);
+    })();
+  </script>
+</body>
+</html>
